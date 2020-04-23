@@ -93,6 +93,58 @@ Answers
 4.1
 
 
+mysql> explain select distinct branch from holdings inner join titles on titles.title = holdings.title where author = 'Ann Brown';
++----+-------------+----------+------------+------+---------------+------+---------+------+------+----------+----------------------------------------------------+
+| id | select_type | table    | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra                                              |
++----+-------------+----------+------------+------+---------------+------+---------+------+------+----------+----------------------------------------------------+
+|  1 | SIMPLE      | titles   | NULL       | ALL  | NULL          | NULL | NULL    | NULL |    5 |    20.00 | Using where; Using temporary                       |
+|  1 | SIMPLE      | holdings | NULL       | ALL  | NULL          | NULL | NULL    | NULL |   10 |    10.00 | Using where; Using join buffer (Block Nested Loop) |
++----+-------------+----------+------------+------+---------------+------+---------+------+------+----------+----------------------------------------------------+
+2 rows in set, 1 warning (0.00 sec)
 
+GOT 2 Rows in EXPLAIN output as:
+
+ROW1
+1) id =1  the first select within the query was used.
+2) Select type : Simple   -    Simple select was used.
+3) Table :  titles  -   this row refers to titles table.
+4) Type : All  -  a full table scan is performed to resolve query
+5) possible key :  no possible index was found by server
+6) key : null  -  no index was used by server
+7) length : null -   no key was used so null length
+8) ref :  null  - No column or constant were used with the key to find the row.
+9) Rows:5  -  mysql believes it will examine 5 rows of this table to execute query.
+10) Extra :  Using where; Using temporary   –    Where clause was used to restrict number of matching rows, temporary table was created to execute query.
+
+Row 2: 
+11) id =1  the first select within the query was used.
+12) Select type : Simple   -    Simple select was used.
+13) Table :  holdings  -   this row refers to holdings table.
+14) Type : All  -  a full table scan is performed to resolve query
+15) possible key : title   -   title is the possible index found by server
+16) key : null  -  no index was used by server
+17) length : null -   no key was used so null length
+18) ref :  null  - No 	column or constant were used with the key to find the row.
+19) Rows:10  -  mysql believes it will examine 10 rows of this table to execute query.
+20) Extra :  Using where; Using join buffer   –    Where clause was used to restrict number of matching rows.
 
 4.2
+-- -----------------USING A NESTED QUERY---------------------
+
+mysql> EXPLAIN SELECT  distinct branch from holdings
+    -> where title in (SELECT title from titles where author = 'Anne Brown');
++----+--------------+-------------+------------+------+---------------+------+---------+------+------+----------+----------------------------------------------------+
+| id | select_type  | table       | partitions | type | possible_keys | key  | key_len | ref  | rows | filtered | Extra                                              |
++----+--------------+-------------+------------+------+---------------+------+---------+------+------+----------+----------------------------------------------------+
+|  1 | SIMPLE       | <subquery2> | NULL       | ALL  | NULL          | NULL | NULL    | NULL | NULL |   100.00 | Using temporary                                    |
+|  1 | SIMPLE       | holdings    | NULL       | ALL  | NULL          | NULL | NULL    | NULL |   10 |    10.00 | Using where; Using join buffer (Block Nested Loop) |
+|  2 | MATERIALIZED | titles      | NULL       | ALL  | NULL          | NULL | NULL    | NULL |    5 |    20.00 | Using where                                        |
++----+--------------+-------------+------------+------+---------------+------+---------+------+------+----------+----------------------------------------------------+
+3 rows in set, 1 warning (0.00 sec)
+
+As a Result :
+
+If you look at the above result, JOINs are faster than sub-queries.
+In JOINs RDBMS can create an execution plan that is better for your query and can predict what data should be loaded 
+to be processed and save time, unlike the sub-query where it will run all the queries and load all their data to do
+the processing.
