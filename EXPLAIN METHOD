@@ -144,7 +144,8 @@ mysql> EXPLAIN SELECT  distinct branch from holdings
 
 As a Result :
 
-If you look at the above result, JOINs are faster than sub-queries.
+If you look at the above result, there is no change in query optimization until index is added. 
+Though JOINs are faster than sub-queries.
 In JOINs RDBMS can create an execution plan that is better for your query and can predict what data should be loaded 
 to be processed and save time, unlike the sub-query where it will run all the queries and load all their data to do
 the processing.
