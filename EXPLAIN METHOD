@@ -1,0 +1,98 @@
+QUESTION
+Q1: What do different columns in the output of EXPLAIN mean? What possible values can those have? What is the meaning of those values?
+ANSWERS
+MYSQL explain statement can be used to explore the order that the optimizer chooses to process queries.
+Different columns in explain:
+1) id : It means the number of the query.
+2) select_type : The Type of SELECT statement being used.
+3) table: the table for the output row.
+4) Type: The join type
+
+
+5) Possible key: The keys that could be used to find rows in the table
+6) Key: key that is actually used
+7) Key len: The length of key mysql decided to use , that is the length of the key in the key column.
+8) Ref: The column comapred to the indexes or which columns are compare to the index shown in key column
+9) Rows: numbers of rows that will be raed to execute the query.
+10)Extra: provides additional information about how mysql executes the query.
+
+A)
+Select type : 
+
+Simple – no join or subquery is used. It is just the normal select
+Primary –  it is the outermost select --------
+Union -   Union query or Second or later SELECT statement in a UNION
+Derived-  if a select query is placed in from the clause which creates the derived table.
+Sub query – 	First SELECT in subquery
+B)
+Table :
+
+The name of the table to which the row of output refers. This can also be one of the following values:
+1) <unionM,N>: The row refers to the union of the rows with id values of M and N.
+2) <derivedN>: The row refers to the derived table result for the row with an id value of N. 
+               A derived table may result, for example, from a subquery in the FROM clause.
+3) <subqueryN>: The row refers to the result of a materialized subquery for the row with an id value of N.
+
+C) 
+TYPE :
+1) System:  Can have at most one row.
+2) eq ref: One row is read from this table for each combination of rows from the previous tables. 
+3) Index: result fetched from index.
+4) All : entire table is scanned for query execution.
+5) ref : All rows with matching index values are read from this table for each combination of rows from the previous tables
+6) Ref or null : same aseq_ref except it allows null value or null conditions
+7) Fulltext : The join is performed using a FULLTEXT index.
+8) Ref or null : This join type is like ref, but with the addition that MySQL does an extra search 
+for rows that contain NULL values. This join type optimization is used most often in resolving subqueries.
+9) Index merge : use of 2 index on same table.
+10) Range : used when index exist and  range (<,><=,>=,in,between) are used in where clause
+
+D)
+EXTRA :
+1) Distinct : MySQL is looking for distinct values, so it stops searching for more rows for the current row combination 
+after it has found the first matching row.
+2) Not Exists : MySQL was able to do a LEFT JOIN optimization on the query and does not examine more rows in this table for
+the previous row combination after it finds one row that matches the LEFT JOIN criteria.
+3) Range checked for each record : Server found no good index to use, but checks indexes for each row. 
+Slow, but faster than a full table scan.
+4) Using filesort : Server will need to do an extra pass to sort the rows.
+5) Using index : Server is able to return rows directly from the index instead of doing an additional seek to
+read the actual rows. Generally good news.
+6) Using temporary : Server will need to create a temporary table to hold results. 
+Often occurs with differing GROUP BY and ORDER BY columns.
+7) Using where : Server is using values in the WHERE clause to limit returned rows.
+
+Question
+2.1 The value under 'rows' column in the output of EXPLAIN query and SELECT query after it are same. What does it mean?
+2.2 Is the SELECT query optimal? If no, how do we optimize it?
+
+Answers
+2.1 It means that the entire table was traversed to execute the query i.e. it traverse the row 1002345 times and “All” type was used.
+2.2 No the select query is not optimal. We can  make it optimal by adding a index to user_id since it will be having maximum lookup
+
+Question
+3.1 We decide to index columns in comments table to optimize the SELECT query. What column(s) will you index in which order?
+Ask the exercise creator for a hint if you are confused.
+
+Answers
+3.1 Since the table comments will be having lots of insertion, the use of index on this table is not recommended as it can 
+slow down the applications insert and update .The comment table will have more frequent insert.
+But at the same time it will also have a lots of lookup so we can add index on user_id,
+since it will be having the widest range of values and  value for this column will not be repeating frequently,
+and then we can add index on commentable_id.
+
+Question
+Q4:
+4.1 EXPLAIN a SELECT query against one of your databases which employs an INNER JOIN between two tables. 
+What does the output look like? What does the values under different columns mean? Do you get only one row in EXPLAIN's output?
+4.2 Form the same select query in above question using a subquery instead of a JOIN.
+What does the EXPLAIN output look like now? Which query is better and why?
+
+Answers
+
+4.1
+
+
+
+
+4.2
